@@ -9,8 +9,13 @@ BackupManager::BackupManager(QObject* parent)
 
 void BackupManager::setBackupDir(const QString& dir)
 {
-    m_backupDir = dir;
-    QDir().mkpath(m_backupDir);
+    QDir backup(dir);
+    if (backup.isRelative()) {
+        backup = QDir(QDir::current().filePath(dir));
+    }
+
+    m_backupDir = backup.absolutePath();
+    backup.mkpath(".");
 }
 
 void BackupManager::backupFile(const QString& srcPath)
@@ -21,7 +26,6 @@ void BackupManager::backupFile(const QString& srcPath)
     QFileInfo fi(srcPath);
     QString dest = QDir(m_backupDir).filePath(fi.fileName());
 
-    //  existing backup
     QFile::remove(dest);
     QFile::copy(srcPath, dest);
 }
@@ -33,8 +37,10 @@ void BackupManager::restoreFile(const QString& dstPath)
 
     QFileInfo fi(dstPath);
     QString src = QDir(m_backupDir).filePath(fi.fileName());
-    if (!QFile::exists(src))
+
+    if (!QFile::exists(src)) {
         return;
+    }
 
     QFile::remove(dstPath);
     QFile::copy(src, dstPath);
