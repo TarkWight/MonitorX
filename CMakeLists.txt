@@ -24,6 +24,7 @@ add_subdirectory(src/config)
 add_subdirectory(src/models)
 add_subdirectory(src/services)
 add_subdirectory(src/utils)
+add_subdirectory(src/viewmodels)
 add_subdirectory(src/ui)
 add_subdirectory(src/app)
 
