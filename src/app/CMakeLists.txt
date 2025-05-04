@@ -5,6 +5,7 @@ add_executable(MonitorX
 
 target_link_libraries(MonitorX
     PRIVATE
+        ConfigLib
         UiLib
         Qt6::Widgets
 )

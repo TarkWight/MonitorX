@@ -9,6 +9,7 @@ target_include_directories(UiLib
 
 target_link_libraries(UiLib
     PUBLIC Qt6::Widgets
+    PRIVATE ConfigLib
 )
 
 target_compile_features(UiLib
