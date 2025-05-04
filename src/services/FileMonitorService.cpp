@@ -14,7 +14,9 @@ FileMonitorService::FileMonitorService(ConfigManager* cfg, QObject* parent)
     , m_backup(new BackupManager(this))
     , m_log(new LogManager(cfg->logFile(), this))
 {
-    m_backup->setBackupDir(m_cfg->backupDirectory());
+    QDir watchDir(m_cfg->watchDirectory());
+    QString backupPath = watchDir.filePath(m_cfg->backupDirectory());
+    m_backup->setBackupDir(backupPath);
 
     connect(&m_watcher, &QFileSystemWatcher::directoryChanged,
             this, &FileMonitorService::onDirectoryChanged);
@@ -28,6 +30,7 @@ FileMonitorService::FileMonitorService(ConfigManager* cfg, QObject* parent)
         }
     });
 }
+
 
 FileMonitorService::~FileMonitorService()
 {

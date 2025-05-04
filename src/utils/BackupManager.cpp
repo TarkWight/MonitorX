@@ -1,4 +1,6 @@
 #include "BackupManager.hpp"
+#include "LogManager.hpp"
+
 #include <QFile>
 #include <QDir>
 #include <QFileInfo>
@@ -9,13 +11,16 @@ BackupManager::BackupManager(QObject* parent)
 
 void BackupManager::setBackupDir(const QString& dir)
 {
-    QDir backup(dir);
-    if (backup.isRelative()) {
-        backup = QDir(QDir::current().filePath(dir));
-    }
+    m_backupDir = dir;
+    QDir().mkpath(m_backupDir);
 
-    m_backupDir = backup.absolutePath();
-    backup.mkpath(".");
+    if (m_logger)
+        m_logger->logEvent("Backup directory set", m_backupDir);
+}
+
+void BackupManager::setLogger(LogManager* logger)
+{
+    m_logger = logger;
 }
 
 void BackupManager::backupFile(const QString& srcPath)
@@ -27,7 +32,13 @@ void BackupManager::backupFile(const QString& srcPath)
     QString dest = QDir(m_backupDir).filePath(fi.fileName());
 
     QFile::remove(dest);
-    QFile::copy(srcPath, dest);
+    if (QFile::copy(srcPath, dest)) {
+        if (m_logger)
+            m_logger->logEvent("Backup created", dest);
+    } else {
+        if (m_logger)
+            m_logger->logEvent("Backup FAILED", dest);
+    }
 }
 
 void BackupManager::restoreFile(const QString& dstPath)
@@ -39,9 +50,17 @@ void BackupManager::restoreFile(const QString& dstPath)
     QString src = QDir(m_backupDir).filePath(fi.fileName());
 
     if (!QFile::exists(src)) {
+        if (m_logger)
+            m_logger->logEvent("Backup not found (restore failed)", dstPath);
         return;
     }
 
     QFile::remove(dstPath);
-    QFile::copy(src, dstPath);
+    if (QFile::copy(src, dstPath)) {
+        if (m_logger)
+            m_logger->logEvent("Restored from backup", dstPath);
+    } else {
+        if (m_logger)
+            m_logger->logEvent("Restore FAILED", dstPath);
+    }
 }
