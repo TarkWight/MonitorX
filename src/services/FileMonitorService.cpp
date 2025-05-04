@@ -65,30 +65,29 @@ void FileMonitorService::stop()
 void FileMonitorService::initialScan()
 {
     QDir dir(m_cfg->watchDirectory());
-    const auto exts = m_cfg->extensions();
-    for (const QFileInfo& fi : dir.entryInfoList(exts, QDir::Files | QDir::NoSymLinks)) {
+    const QStringList exts = m_cfg->extensions();
+
+    const QFileInfoList fileList = dir.entryInfoList(exts, QDir::Files | QDir::NoSymLinks);
+    for (const QFileInfo &fi : fileList) {
         const QString path = fi.absoluteFilePath();
-        // вычисляем хеш
         QByteArray h = HashManager::fileHash(path, m_cfg->hashAlg());
         m_hashes[path] = h;
-        // копируем в бэкап
         m_backup->backupFile(path);
         m_log->logEvent("Added", path);
         emit fileAdded(path);
-        // начинаем следить
         m_watcher.addPath(path);
     }
 }
 
-void FileMonitorService::onDirectoryChanged(const QString&)
+void FileMonitorService::onDirectoryChanged(const QString &)
 {
-    // новые файлы
     QDir dir(m_cfg->watchDirectory());
-    const auto exts = m_cfg->extensions();
-    for (const QFileInfo& fi : dir.entryInfoList(exts, QDir::Files | QDir::NoSymLinks)) {
-        QString path = fi.absoluteFilePath();
+    const QStringList exts = m_cfg->extensions();
+
+    const QFileInfoList fileList = dir.entryInfoList(exts, QDir::Files | QDir::NoSymLinks);
+    for (const QFileInfo &fi : fileList) {
+        const QString path = fi.absoluteFilePath();
         if (!m_hashes.contains(path)) {
-            // как в initialScan, только без сброса всего
             QByteArray h = HashManager::fileHash(path, m_cfg->hashAlg());
             m_hashes[path] = h;
             m_backup->backupFile(path);
@@ -98,6 +97,7 @@ void FileMonitorService::onDirectoryChanged(const QString&)
         }
     }
 }
+
 
 void FileMonitorService::onFileChanged(const QString& path)
 {
