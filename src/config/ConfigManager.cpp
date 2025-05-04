@@ -42,7 +42,7 @@ QString ConfigManager::watchDirectory() const
 QStringList ConfigManager::extensions() const
 {
     QStringList exts;
-    auto arr = m_cfg.value("extensions").toArray();
+    const QJsonArray arr = m_cfg.value("extensions").toArray();
     for (auto v : arr)
         exts << v.toString();
     return exts;
