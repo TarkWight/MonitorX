@@ -1,5 +1,7 @@
 # src/utils/CMakeLists.txt
 add_library(UtilsLib
+    BackupManager.cpp
+    BackupManager.hpp
     LogManager.cpp
     LogManager.hpp
 )
