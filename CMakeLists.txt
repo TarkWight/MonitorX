@@ -21,6 +21,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY   ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(src/config)
+add_subdirectory(src/models)
 add_subdirectory(src/services)
 add_subdirectory(src/utils)
 add_subdirectory(src/ui)
