@@ -96,10 +96,18 @@ void MonitorViewModel::onFileUpdated(const QString& groupName)
 
 void MonitorViewModel::onFileRestored(const QString& groupName)
 {
+    if (groupName != "all") return;
+
     ++m_deaths;
+    m_saves = 0;
     emit statsChanged();
 
-    m_eventModel->addOrUpdateEntry({ groupName, tr("Restored"), QDateTime::currentDateTime() });
+    m_eventModel->clear();
+    m_eventModel->addOrUpdateEntry({
+        tr("All saves restored"),
+        tr("Death detected"),
+        QDateTime::currentDateTime()
+    });
 }
 
 void MonitorViewModel::onConfigChanged()
