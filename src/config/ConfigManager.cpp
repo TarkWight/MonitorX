@@ -1,36 +1,51 @@
 #include "ConfigManager.hpp"
-#include <QFile>
-#include <QJsonDocument>
-#include <QJsonArray>
-#include <QDir>
 
-ConfigManager::ConfigManager(const QString& configPath, QObject* parent)
-    : QObject(parent)
-    , m_configPath(configPath)
+#include <QJsonDocument>
+
+ConfigManager::ConfigManager(const QString& configFilePath,
+                             ILogger* logger,
+                             QObject* parent)
+    : IConfigManager(parent)
+    , m_configPath(configFilePath)
+    , m_logger(logger)
 {}
 
 bool ConfigManager::load()
 {
     QFile f(m_configPath);
-    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        if (m_logger)
+            m_logger->logEvent("Failed to open config file", m_configPath);
         return false;
+    }
 
-    auto doc = QJsonDocument::fromJson(f.readAll());
-    if (!doc.isObject())
+    QJsonDocument doc = QJsonDocument::fromJson(f.readAll());
+    if (!doc.isObject()) {
+        if (m_logger)
+            m_logger->logEvent("Invalid JSON format in config file", m_configPath);
         return false;
+    }
 
     m_cfg = doc.object();
+    if (m_logger)
+        m_logger->logEvent("Config loaded", m_configPath);
     return true;
 }
 
 bool ConfigManager::save() const
 {
     QFile f(m_configPath);
-    if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+        if (m_logger)
+            m_logger->logEvent("Failed to save config file", m_configPath);
         return false;
+    }
 
     QJsonDocument doc(m_cfg);
     f.write(doc.toJson(QJsonDocument::Indented));
+
+    if (m_logger)
+        m_logger->logEvent("Config saved", m_configPath);
     return true;
 }
 
@@ -43,7 +58,7 @@ QStringList ConfigManager::extensions() const
 {
     QStringList exts;
     const QJsonArray arr = m_cfg.value("extensions").toArray();
-    for (auto v : arr)
+    for (const auto& v : arr)
         exts << v.toString();
     return exts;
 }
@@ -72,7 +87,8 @@ void ConfigManager::setWatchDirectory(const QString& dir)
 void ConfigManager::setExtensions(const QStringList& exts)
 {
     QJsonArray arr;
-    for (auto& e : exts) arr.append(e);
+    for (const auto& e : exts)
+        arr.append(e);
     m_cfg["extensions"] = arr;
     emit configChanged();
 }
@@ -97,16 +113,11 @@ void ConfigManager::setHashAlg(QCryptographicHash::Algorithm alg)
 
 QCryptographicHash::Algorithm ConfigManager::algorithmFromString(const QString& s)
 {
-    if (s.compare("Md5", Qt::CaseInsensitive) == 0)
-        return QCryptographicHash::Md5;
-    if (s.compare("Sha1", Qt::CaseInsensitive) == 0)
-        return QCryptographicHash::Sha1;
-    if (s.compare("Sha256", Qt::CaseInsensitive) == 0)
-        return QCryptographicHash::Sha256;
-    if (s.compare("Sha512", Qt::CaseInsensitive) == 0)
-        return QCryptographicHash::Sha512;
-    // default
-    return QCryptographicHash::Sha256;
+    if (s.compare("Md5", Qt::CaseInsensitive) == 0) return QCryptographicHash::Md5;
+    if (s.compare("Sha1", Qt::CaseInsensitive) == 0) return QCryptographicHash::Sha1;
+    if (s.compare("Sha256", Qt::CaseInsensitive) == 0) return QCryptographicHash::Sha256;
+    if (s.compare("Sha512", Qt::CaseInsensitive) == 0) return QCryptographicHash::Sha512;
+    return QCryptographicHash::Sha256; // default
 }
 
 QString ConfigManager::stringFromAlgorithm(QCryptographicHash::Algorithm alg)

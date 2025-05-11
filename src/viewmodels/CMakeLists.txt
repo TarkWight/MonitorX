@@ -2,6 +2,7 @@
 add_library(ViewModelsLib
     MonitorViewModel.cpp
     MonitorViewModel.hpp
+    IMonitorViewModel.hpp
 )
 
 target_include_directories(ViewModelsLib

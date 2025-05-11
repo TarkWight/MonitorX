@@ -22,8 +22,9 @@ LogManager::LogManager(const QString& logFilePath, QObject* parent)
 void LogManager::logEvent(const QString& event, const QString& filePath)
 {
     QFile f(m_logFilePath);
-    if (!f.open(QIODevice::Append | QIODevice::Text))
+    if (!f.open(QIODevice::Append | QIODevice::Text)) {
         return;
+    }
 
     QTextStream out(&f);
     out << "[" << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")

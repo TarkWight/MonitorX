@@ -4,28 +4,25 @@
 #include <QObject>
 #include <QString>
 
+#include "ILogger.hpp"
+#include "IBackupManager.hpp"
+
 /**
- * @brief Manages a simple file‐based backup directory.
- *
- * You must call setBackupDir() before using backupFile()/restoreFile().
+ * @brief Implements backup operations with logging.
  */
-class BackupManager : public QObject {
+class BackupManager : public QObject, public IBackupManager {
     Q_OBJECT
 
 public:
-    explicit BackupManager(QObject* parent = nullptr);
+    BackupManager(ILogger* logger, QObject* parent = nullptr);
 
-    /// Set (and create) the directory where backups will be stored.
-    void setBackupDir(const QString& dir);
-
-    /// Copy @a srcPath into the backup directory (overwriting any existing file).
-    void backupFile(const QString& srcPath);
-
-    /// Restore from the backup directory back to @a dstPath (overwriting dstPath).
-    void restoreFile(const QString& dstPath);
+    void setBackupDir(const QString& dir) override;
+    void backupFile(const QString& srcPath) override;
+    void restoreFile(const QString& dstPath) override;
 
 private:
     QString m_backupDir;
+    ILogger* m_logger;
 };
 
 #endif // BACKUPMANAGER_HPP

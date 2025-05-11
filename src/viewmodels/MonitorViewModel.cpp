@@ -1,6 +1,4 @@
 #include "MonitorViewModel.hpp"
-#include "ConfigManager.hpp"
-#include "FileMonitorService.hpp"
 #include "FileEntryModel.hpp"
 
 #include <QCoreApplication>
@@ -9,63 +7,43 @@
 #include <QFileInfo>
 #include <QDateTime>
 
-MonitorViewModel::MonitorViewModel(const QString& configPath, QObject* parent)
-    : QObject(parent)
-    , m_cfg(new ConfigManager(configPath, this))
-    , m_service(new FileMonitorService(m_cfg, this))
+MonitorViewModel::MonitorViewModel(IConfigManager* config,
+                                   IFileMonitorService* service,
+                                   ILogger* logger,
+                                   QObject* parent)
+    : IMonitorViewModel(parent)
+    , m_cfg(config)
+    , m_service(service)
+    , m_log(logger)
     , m_eventModel(new FileEntryModel(this))
 {
-    if (!m_cfg->load()) {
-        qWarning("MonitorViewModel: cannot load config from %s",
-                 qPrintable(configPath));
-    }
     m_watchDirectory = m_cfg->watchDirectory();
 
-    connect(m_service, &FileMonitorService::fileAdded,
+    connect(m_service, &IFileMonitorService::fileAdded,
             this, &MonitorViewModel::onFileAdded);
-    connect(m_service, &FileMonitorService::fileUpdated,
+    connect(m_service, &IFileMonitorService::fileUpdated,
             this, &MonitorViewModel::onFileUpdated);
-    connect(m_service, &FileMonitorService::fileRestored,
+    connect(m_service, &IFileMonitorService::fileRestored,
             this, &MonitorViewModel::onFileRestored);
 
-    connect(m_cfg, &ConfigManager::configChanged,
-            this, &MonitorViewModel::onConfigChanged);
+    connect(m_cfg, &IConfigManager::configChanged, this, &MonitorViewModel::onConfigChanged);
+    connect(m_cfg, &QObject::destroyed, this, &MonitorViewModel::stop);
 }
 
 MonitorViewModel::~MonitorViewModel() = default;
 
-QString MonitorViewModel::watchDirectory() const
-{
-    return m_watchDirectory;
-}
-
-int MonitorViewModel::deaths() const
-{
-    return m_deaths;
-}
-
-int MonitorViewModel::saves() const
-{
-    return m_saves;
-}
-
-bool MonitorViewModel::isRunning() const
-{
-    return m_running;
-}
-
-QAbstractListModel* MonitorViewModel::eventModel() const
-{
-    return m_eventModel;
-}
+QString MonitorViewModel::watchDirectory() const { return m_watchDirectory; }
+int MonitorViewModel::deaths() const { return m_deaths; }
+int MonitorViewModel::saves() const { return m_saves; }
+bool MonitorViewModel::isRunning() const { return m_running; }
+QAbstractListModel* MonitorViewModel::eventModel() const { return m_eventModel; }
 
 void MonitorViewModel::start()
 {
-    if (m_running)
-        return;
+    if (m_running) return;
 
     m_deaths = 0;
-    m_saves  = 0;
+    m_saves = 0;
     emit statsChanged();
 
     m_eventModel->clear();
@@ -75,8 +53,7 @@ void MonitorViewModel::start()
 
 void MonitorViewModel::stop()
 {
-    if (!m_running)
-        return;
+    if (!m_running) return;
 
     m_service->stop();
     setRunning(false);
@@ -100,8 +77,7 @@ void MonitorViewModel::setWatchDirectory(const QString& dir)
 
 void MonitorViewModel::openLogs() const
 {
-    const QString logPath = QCoreApplication::applicationDirPath()
-    + "/" + m_cfg->logFile();
+    QString logPath = QCoreApplication::applicationDirPath() + "/" + m_cfg->logFile();
     QDesktopServices::openUrl(QUrl::fromLocalFile(logPath));
 }
 
@@ -110,31 +86,26 @@ void MonitorViewModel::onFileAdded(const QString& groupName)
     ++m_saves;
     emit statsChanged();
 
-    m_eventModel->addOrUpdateEntry({
-        groupName,
-        tr("Added"),
-        QDateTime::currentDateTime()
-    });
+    m_eventModel->addOrUpdateEntry({ groupName, tr("Added"), QDateTime::currentDateTime() });
 }
 
 void MonitorViewModel::onFileUpdated(const QString& groupName)
 {
-    m_eventModel->addOrUpdateEntry({
-        groupName,
-        tr("Modified"),
-        QDateTime::currentDateTime()
-    });
+    m_eventModel->addOrUpdateEntry({ groupName, tr("Modified"), QDateTime::currentDateTime() });
 }
 
 void MonitorViewModel::onFileRestored(const QString& groupName)
 {
+    if (groupName != "all") return;
+
     ++m_deaths;
     m_saves = 0;
     emit statsChanged();
 
+    m_eventModel->clear();
     m_eventModel->addOrUpdateEntry({
-        groupName,
-        tr("Restored"),
+        tr("All saves restored"),
+        tr("Death detected"),
         QDateTime::currentDateTime()
     });
 }
@@ -147,8 +118,7 @@ void MonitorViewModel::onConfigChanged()
 
 void MonitorViewModel::setRunning(bool running)
 {
-    if (m_running == running)
-        return;
+    if (m_running == running) return;
     m_running = running;
     emit runningChanged();
 }

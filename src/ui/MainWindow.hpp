@@ -6,6 +6,7 @@
 namespace Ui {
 class MainWindow;
 }
+class MonitorViewModel;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -14,8 +15,13 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override;
 
+    void setViewModel(MonitorViewModel* vm);
+
 private:
-    Ui::MainWindow* ui;
+    void setRunning(bool running);
+
+    Ui::MainWindow*      ui;
+    MonitorViewModel*    m_vm = nullptr;
 };
 
 #endif // MAINWINDOW_HPP

@@ -2,6 +2,7 @@
 add_library(ServicesLib
     FileMonitorService.cpp
     FileMonitorService.hpp
+    IFileMonitorService.hpp
 )
 
 target_include_directories(ServicesLib
