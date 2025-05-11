@@ -11,5 +11,6 @@ target_link_libraries(MonitorX
         UtilsLib
         ViewModelsLib
         UiLib
+        DILib
         Qt6::Widgets
 )

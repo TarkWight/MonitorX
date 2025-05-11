@@ -1,15 +1,16 @@
-# ifndef FILEMONITORVIEWMODEL_HPP
-#define FILEMONITORVIEWMODEL_HPP
+#ifndef MONITORVIEWMODEL_HPP
+#define MONITORVIEWMODEL_HPP
 
-#include <QObject>
-#include <QString>
+#include "IMonitorViewModel.hpp"
+#include "IConfigManager.hpp"
+#include "IFileMonitorService.hpp"
+#include "ILogger.hpp"
+
 #include <QAbstractListModel>
 
-class ConfigManager;
-class FileMonitorService;
 class FileEntryModel;
 
-class MonitorViewModel : public QObject {
+class MonitorViewModel : public IMonitorViewModel {
     Q_OBJECT
 
     Q_PROPERTY(QString watchDirectory   READ watchDirectory   NOTIFY watchDirectoryChanged)
@@ -19,26 +20,23 @@ class MonitorViewModel : public QObject {
     Q_PROPERTY(QAbstractListModel* eventModel READ eventModel CONSTANT)
 
 public:
-    explicit MonitorViewModel(const QString& configPath, QObject* parent = nullptr);
+    explicit MonitorViewModel(IConfigManager* config,
+                              IFileMonitorService* service,
+                              ILogger* logger,
+                              QObject* parent = nullptr);
     ~MonitorViewModel() override;
 
-    /// --- getters ---
-    QString               watchDirectory() const;
-    int                   deaths()         const;
-    int                   saves()          const;
-    bool                  isRunning()      const;
-    QAbstractListModel*   eventModel()     const;
+    QString watchDirectory() const override;
+    int deaths() const override;
+    int saves() const override;
+    bool isRunning() const override;
+    QAbstractListModel* eventModel() const override;
 
 public slots:
-    Q_INVOKABLE void start();
-    Q_INVOKABLE void stop();
-    Q_INVOKABLE void setWatchDirectory(const QString& dir);
-    Q_INVOKABLE void openLogs() const;
-
-signals:
-    void watchDirectoryChanged();
-    void statsChanged();
-    void runningChanged();
+    void start() override;
+    void stop() override;
+    void setWatchDirectory(const QString& dir) override;
+    void openLogs() const override;
 
 private slots:
     void onFileAdded(const QString& groupName);
@@ -49,14 +47,15 @@ private slots:
 private:
     void setRunning(bool running);
 
-    ConfigManager*       m_cfg;
-    FileMonitorService*  m_service;
+    IConfigManager*      m_cfg;
+    IFileMonitorService* m_service;
+    ILogger*             m_log;
     FileEntryModel*      m_eventModel;
 
     QString              m_watchDirectory;
-    int                  m_deaths   = 0;
-    int                  m_saves    = 0;
-    bool                 m_running  = false;
+    int                  m_deaths = 0;
+    int                  m_saves = 0;
+    bool                 m_running = false;
 };
 
-#endif // FILEMONITORVIEWMODEL_HPP
+#endif // MONITORVIEWMODEL_HPP

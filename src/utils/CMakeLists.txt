@@ -6,6 +6,9 @@ add_library(UtilsLib
     BackupManager.hpp
     LogManager.cpp
     LogManager.hpp
+    ILogger.hpp
+    IHashManager.hpp
+    IBackupManager.hpp
 )
 
 target_include_directories(UtilsLib

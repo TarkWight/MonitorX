@@ -1,47 +1,51 @@
 #ifndef CONFIGMANAGER_HPP
 #define CONFIGMANAGER_HPP
 
-#include <QObject>
-#include <QString>
-#include <QStringList>
-#include <QCryptographicHash>
-#include <QJsonObject>
+#include "IConfigManager.hpp"
+#include "ILogger.hpp"
 
-class ConfigManager : public QObject {
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QFileInfo>
+#include <QDir>
+#include <QFile>
+
+/**
+ * @brief Implementation of configuration manager.
+ */
+class ConfigManager : public IConfigManager {
     Q_OBJECT
 
 public:
-    explicit ConfigManager(const QString& configFilePath, QObject* parent = nullptr);
+    explicit ConfigManager(const QString& configFilePath,
+                           ILogger* logger,
+                           QObject* parent = nullptr);
 
-    /// Загрузить настройки из JSON-файла. Возвращает false при ошибке.
-    bool load();
+    bool load() override;
+    bool save() const override;
 
-    /// Сохранить текущее состояние в JSON-файл. Возвращает false при ошибке.
-    bool save() const;
+    QString watchDirectory() const override;
+    QStringList extensions() const override;
+    QString backupDirectory() const override;
+    QString logFile() const override;
+    QCryptographicHash::Algorithm hashAlg() const override;
 
-    // --- getters ---
-    QString watchDirectory()   const;
-    QStringList extensions()   const;
-    QString backupDirectory()  const;
-    QString logFile()          const;
-    QCryptographicHash::Algorithm hashAlg() const;
-
-    // --- setters (эти методы испускают configChanged()) ---
-    void setWatchDirectory(const QString& dir);
-    void setExtensions(const QStringList& exts);
-    void setBackupDirectory(const QString& dir);
-    void setLogFile(const QString& file);
-    void setHashAlg(QCryptographicHash::Algorithm alg);
+    void setWatchDirectory(const QString& dir) override;
+    void setExtensions(const QStringList& exts) override;
+    void setBackupDirectory(const QString& dir) override;
+    void setLogFile(const QString& file) override;
+    void setHashAlg(QCryptographicHash::Algorithm alg) override;
 
 signals:
-    /// Эмитится, когда поменялась любая опция
     void configChanged();
 
 private:
     static QCryptographicHash::Algorithm algorithmFromString(const QString& s);
     static QString stringFromAlgorithm(QCryptographicHash::Algorithm alg);
 
-    const QString  m_configPath;
-    QJsonObject    m_cfg;
+    QString m_configPath;
+    QJsonObject m_cfg;
+    ILogger* m_logger = nullptr;
 };
+
 #endif // CONFIGMANAGER_HPP

@@ -1,56 +1,50 @@
 #ifndef FILEMONITORSERVICE_HPP
 #define FILEMONITORSERVICE_HPP
 
-#include <QObject>
+#include "IFileMonitorService.hpp"
+#include "IConfigManager.hpp"
+#include "IBackupManager.hpp"
+#include "IHashManager.hpp"
+#include "ILogger.hpp"
+
 #include <QFileSystemWatcher>
 #include <QHash>
 #include <QSet>
-#include <QString>
-#include <QByteArray>
-
-class ConfigManager;
-class BackupManager;
-class LogManager;
 
 /**
- * Мониторит папку сохранений, группируя файлы по базовому имени.
- * Сигналы эмитятся на уровне группы:
- *  - fileAdded(groupName)
- *  - fileUpdated(groupName)
- *  - fileRestored(groupName)
+ * @brief Implementation of file monitoring service.
  */
-class FileMonitorService : public QObject {
+class FileMonitorService : public IFileMonitorService {
     Q_OBJECT
 
 public:
-    explicit FileMonitorService(ConfigManager* cfg, QObject* parent = nullptr);
+    explicit FileMonitorService(IConfigManager* cfg,
+                                IBackupManager* backup,
+                                IHashManager* hasher,
+                                ILogger* logger,
+                                QObject* parent = nullptr);
     ~FileMonitorService() override;
 
-    void start();
-    void stop();
-    bool isRunning() const { return m_running; }
-
-signals:
-    void fileAdded(const QString& groupName);
-    void fileUpdated(const QString& groupName);
-    void fileRestored(const QString& groupName);
+    void start() override;
+    void stop() override;
+    bool isRunning() const override;
 
 private slots:
-    void onDirectoryChanged(const QString& /*path*/);
+    void onDirectoryChanged(const QString& path);
     void onFileChanged(const QString& path);
 
 private:
     void initialScan();
 
-    ConfigManager* m_cfg;
-    BackupManager* m_backup;
-    LogManager*    m_log;
+    IConfigManager* m_cfg;
+    IBackupManager* m_backup;
+    IHashManager*   m_hasher;
+    ILogger*        m_log;
+
     QFileSystemWatcher m_watcher;
 
-    // groupName → ( filePath → lastHash )
     QHash<QString, QHash<QString, QByteArray>> m_groupHashes;
     QSet<QString> m_knownGroups;
-
     bool m_running = false;
 };
 

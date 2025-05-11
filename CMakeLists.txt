@@ -26,6 +26,7 @@ add_subdirectory(src/services)
 add_subdirectory(src/utils)
 add_subdirectory(src/viewmodels)
 add_subdirectory(src/ui)
+add_subdirectory(src/di)
 add_subdirectory(src/app)
 
 set(RUNTIME_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})

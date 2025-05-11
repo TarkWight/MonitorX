@@ -1,13 +1,14 @@
 #ifndef LOGMANAGER_HPP
 #define LOGMANAGER_HPP
 
+#include "ILogger.hpp"
+
 #include <QObject>
-#include <QString>
 
 /**
  * @brief Appends timestamped log entries into a text file.
  */
-class LogManager : public QObject {
+class LogManager : public QObject, public ILogger {
     Q_OBJECT
 
 public:
@@ -17,11 +18,8 @@ public:
      */
     explicit LogManager(const QString& logFilePath, QObject* parent = nullptr);
 
-    /**
-     * @brief Append a new log entry in the format:
-     *        [YYYY-MM-DD hh:mm:ss] <event>: <filePath>
-     */
-    void logEvent(const QString& event, const QString& filePath);
+    // ILogger interface
+    void logEvent(const QString& event, const QString& filePath) override;
 
 private:
     QString m_logFilePath;
