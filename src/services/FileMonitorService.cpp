@@ -14,6 +14,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QElapsedTimer>
 
 FileMonitorService::FileMonitorService(IConfigManager *cfg,
                                        IBackupManager *backup,
@@ -152,59 +153,59 @@ void FileMonitorService::onDirectoryChanged(const QString &) {
 }
 
 
-void FileMonitorService::onFileChanged(const QString &path) {
+void FileMonitorService::onFileChanged(const QString& path) {
     QFileInfo fi(path);
     const QString groupName = fi.completeBaseName();
-
     if (!m_knownGroups.contains(groupName)) {
         return;
     }
 
-    auto &hashMap = m_groupHashes[groupName];
+    auto& hashMap = m_groupHashes[groupName];
     const QStringList paths = hashMap.keys();
 
-    bool anyExist = false;
-    for (const QString &p : paths) {
-        if (QFile::exists(p)) {
-            anyExist = true;
-            break;
-        }
-    }
+    bool allDeleted = std::all_of(paths.begin(), paths.end(), [](const QString& p) {
+        return !QFile::exists(p);
+    });
 
-    if (!anyExist) {
+    if (allDeleted) {
         m_log->logEvent("Group deleted", groupName);
 
-        for (const QString &p : paths) {
+        for (const QString& p : paths) {
             m_backup->restoreFile(p);
+            m_watcher.addPath(p);
         }
 
         m_log->logEvent("Group restored", groupName);
-        emit fileRestored(groupName);
 
-        for (const QString &p : paths) {
-            m_watcher.addPath(p);
-        }
-    } else {
-        bool modified = false;
-        for (const QString &p : paths) {
-            if (!QFile::exists(p)) {
-                continue;
-            }
-
-            QByteArray newHash = m_hasher->fileHash(p, m_cfg->hashAlg());
-            if (newHash != hashMap[p]) {
-                hashMap[p] = newHash;
-                modified = true;
-            }
+        static QElapsedTimer deathTimer;
+        if (!deathTimer.isValid() || deathTimer.elapsed() > 1000) {
+            emit fileRestored("all");
+            deathTimer.restart();
         }
 
-        if (modified) {
-            for (const QString &p : paths) {
-                m_backup->backupFile(p);
-            }
+        return;
+    }
 
-            m_log->logEvent("Group modified", groupName);
-            emit fileUpdated(groupName);
+    bool modified = false;
+    for (const QString& p : paths) {
+        if (!QFile::exists(p)) {
+            continue;
+        }
+
+        QByteArray newH = m_hasher->fileHash(p, m_cfg->hashAlg());
+        if (newH != hashMap[p]) {
+            hashMap[p] = newH;
+            modified = true;
         }
     }
+
+    if (modified) {
+        for (const QString& p : paths) {
+            m_backup->backupFile(p);
+        }
+
+        m_log->logEvent("Group modified", groupName);
+        emit fileUpdated(groupName);
+    }
 }
+
