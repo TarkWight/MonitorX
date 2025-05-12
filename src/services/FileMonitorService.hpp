@@ -1,3 +1,13 @@
+//===--  MonitorX/src/servicesFileMonitorService.hpp - Save Directory Watcher --*- C++ -*-===//
+//
+//                     MonitorX — Save File Monitoring Tool
+//
+// This file defines FileMonitorService, a concrete implementation of the
+// IFileMonitorService interface. It watches a configured directory for
+// grouped save files and emits signals when changes occur.
+//
+//===-------------------------------------------------------------------------------------===//
+
 #ifndef FILEMONITORSERVICE_HPP
 #define FILEMONITORSERVICE_HPP
 
@@ -11,18 +21,16 @@
 #include <QHash>
 #include <QSet>
 
-/**
- * @brief Implementation of file monitoring service.
- */
 class FileMonitorService : public IFileMonitorService {
     Q_OBJECT
 
 public:
-    explicit FileMonitorService(IConfigManager* cfg,
-                                IBackupManager* backup,
-                                IHashManager* hasher,
-                                ILogger* logger,
-                                QObject* parent = nullptr);
+    explicit FileMonitorService(IConfigManager *cfg,
+                                IBackupManager *backup,
+                                IHashManager *hasher,
+                                ILogger *logger,
+                                QObject *parent = nullptr);
+
     ~FileMonitorService() override;
 
     void start() override;
@@ -30,16 +38,16 @@ public:
     bool isRunning() const override;
 
 private slots:
-    void onDirectoryChanged(const QString& path);
-    void onFileChanged(const QString& path);
+    void onDirectoryChanged(const QString &path);
+    void onFileChanged(const QString &path);
 
 private:
     void initialScan();
 
-    IConfigManager* m_cfg;
-    IBackupManager* m_backup;
-    IHashManager*   m_hasher;
-    ILogger*        m_log;
+    IConfigManager *m_cfg;
+    IBackupManager *m_backup;
+    IHashManager *m_hasher;
+    ILogger *m_log;
 
     QFileSystemWatcher m_watcher;
 

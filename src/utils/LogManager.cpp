@@ -1,14 +1,22 @@
+//===-- MonitorX/src/utils/LogManager.cpp - File-based Event Logger Implementation -*- C++ -*-===//
+//
+//                     MonitorX — Save File Monitoring Tool
+//
+// Implements the LogManager class, which writes timestamped log entries into a persistent file
+// for audit and debugging purposes.
+//
+//===-----------------------------------------------------------------------------------------===//
+
 #include "LogManager.hpp"
-#include <QFile>
-#include <QTextStream>
+
 #include <QDateTime>
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
+#include <QTextStream>
 
-LogManager::LogManager(const QString& logFilePath, QObject* parent)
-    : QObject(parent)
-    , m_logFilePath(logFilePath)
-{
+LogManager::LogManager(const QString &logFilePath, QObject *parent)
+    : QObject(parent), m_logFilePath(logFilePath) {
     QFileInfo fi(m_logFilePath);
     QDir().mkpath(fi.absolutePath());
 
@@ -19,8 +27,7 @@ LogManager::LogManager(const QString& logFilePath, QObject* parent)
     }
 }
 
-void LogManager::logEvent(const QString& event, const QString& filePath)
-{
+void LogManager::logEvent(const QString &event, const QString &filePath) {
     QFile f(m_logFilePath);
     if (!f.open(QIODevice::Append | QIODevice::Text)) {
         return;
