@@ -1,22 +1,24 @@
+//===-- MonitorX/src/utils/IHashManager.hpp - Hashing Interface --*- C++ -*-===//
+//
+//                     MonitorX — Save File Monitoring Tool
+//
+// This file defines the IHashManager interface, responsible for computing
+// cryptographic hashes of files using selected algorithms.
+//
+//===-----------------------------------------------------------------------===//
+
 #ifndef IHASHMANAGER_H
 #define IHASHMANAGER_H
 
-#include <QString>
 #include <QByteArray>
 #include <QCryptographicHash>
+#include <QString>
 
-/**
- * @brief Interface for hashing files.
- */
 class IHashManager {
 public:
     virtual ~IHashManager() = default;
 
-    /**
-     * @brief Computes the hash of a file.
-     * @return QByteArray with hash (empty if error).
-     */
-    virtual QByteArray fileHash(const QString& filePath,
+    virtual QByteArray fileHash(const QString &filePath,
                                 QCryptographicHash::Algorithm algorithm) = 0;
 };
 
