@@ -127,26 +127,30 @@ void FileMonitorService::onDirectoryChanged(const QString &) {
 
     for (auto it = groups.constBegin(); it != groups.constEnd(); ++it) {
         const QString groupName = it.key();
-        if (m_knownGroups.contains(groupName)) {
-            continue;
-        }
-
-        m_knownGroups.insert(groupName);
         const QStringList paths = it.value();
 
-        QHash<QString, QByteArray> hashMap;
+        bool isNewGroup = !m_knownGroups.contains(groupName);
+        auto &hashMap = m_groupHashes[groupName];
+
         for (const QString &path : paths) {
-            QByteArray hash = m_hasher->fileHash(path, m_cfg->hashAlg());
-            hashMap[path] = hash;
-            m_backup->backupFile(path);
-            m_watcher.addPath(path);
+            if (!hashMap.contains(path)) {
+                QByteArray hash = m_hasher->fileHash(path, m_cfg->hashAlg());
+                hashMap[path] = hash;
+                m_backup->backupFile(path);
+                m_watcher.addPath(path);
+            }
         }
 
         m_groupHashes[groupName] = hashMap;
-        m_log->logEvent("New group added", groupName);
-        emit fileAdded(groupName);
+
+        if (isNewGroup) {
+            m_knownGroups.insert(groupName);
+            m_log->logEvent("New group added", groupName);
+            emit fileAdded(groupName);
+        }
     }
 }
+
 
 void FileMonitorService::onFileChanged(const QString &path) {
     QFileInfo fi(path);
