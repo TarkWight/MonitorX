@@ -1,0 +1,8 @@
+{
+    "watchDirectory": "D:/Software/Games/Anomaly/appdata/savedgames",
+    "extensions": ["*.dds", "*.scoc", "*.scop"],
+    "backupDirectory": ".backup",
+    "logFile": "monitor.log",
+    "hashAlgorithm": "Sha256"
+  }
+  

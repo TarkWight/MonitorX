@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>370</width><height>260</height></rect>
+  </property>
+  <property name="minimumSize">
+   <size><width>370</width><height>260</height></size>
+  </property>
+  <property name="windowTitle">
+   <string>MonitorX</string>
+  </property>
+
+  <!-- Центральная часть -->
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+
+    <!-- 1) Путь к сохранениям -->
+    <item>
+     <layout class="QHBoxLayout" name="pathLayout">
+      <item>
+       <widget class="QLabel" name="labelPath">
+        <property name="text"><string>Путь к сохранениям:</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="lineEditPath">
+        <property name="readOnly"><bool>true</bool></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="buttonBrowse">
+        <property name="text"><string>Указать путь</string></property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+
+    <!-- 2) Статистика -->
+    <item>
+     <widget class="QGroupBox" name="groupStats">
+      <property name="title"><string>Статистика</string></property>
+      <layout class="QGridLayout" name="gridStats">
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelDeaths">
+         <property name="text"><string>Смертей:</string></property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="labelDeathsValue">
+         <property name="text"><string>0</string></property>
+         <property name="alignment"><set>Qt::AlignRight|Qt::AlignVCenter</set></property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="labelSaves">
+         <property name="text"><string>Сохранений:</string></property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="labelSavesValue">
+         <property name="text"><string>0</string></property>
+         <property name="alignment"><set>Qt::AlignRight|Qt::AlignVCenter</set></property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+
+	<!-- 3) История -->
+	<item>
+	  <widget class="QListView" name="listViewEvents">
+		<property name="minimumHeight"><number>100</number></property>
+		<property name="alternatingRowColors"><bool>true</bool></property>
+	  </widget>
+	</item>
+
+    <!-- 4) Логи -->
+    <item>
+     <widget class="QPushButton" name="buttonLogs">
+      <property name="text"><string>Логи…</string></property>
+     </widget>
+    </item>
+
+    <!-- 5) Кнопки Stop/Start -->
+    <item>
+     <layout class="QHBoxLayout" name="bottomButtons">
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
+        <property name="sizeHint">
+         <size><width>40</width><height>20</height></size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="buttonStop">
+        <property name="text"><string>Stop</string></property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="buttonStart">
+        <property name="text"><string>Start</string></property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+
+    <!-- 6) Индикаторы состояния -->
+    <item>
+     <layout class="QHBoxLayout" name="indicatorLayout">
+      <item>
+       <widget class="QFrame" name="frameRunIndicator">
+        <property name="minimumSize"><size><width>16</width><height>16</height></size></property>
+        <property name="maximumSize"><size><width>16</width><height>16</height></size></property>
+        <property name="frameShape"><enum>QFrame::StyledPanel</enum></property>
+        <property name="frameShadow"><enum>QFrame::Raised</enum></property>
+        <property name="styleSheet">
+         <string notr="true">QFrame { border-radius: 8px; background-color: darkgreen; }</string>
+        </property>
+        <property name="toolTip"><string>Monitoring</string></property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="indicatorSpacer">
+        <property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property>
+        <property name="sizeHint"><size><width>20</width><height>0</height></size></property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QFrame" name="frameStopIndicator">
+        <property name="minimumSize"><size><width>16</width><height>16</height></size></property>
+        <property name="maximumSize"><size><width>16</width><height>16</height></size></property>
+        <property name="frameShape"><enum>QFrame::StyledPanel</enum></property>
+        <property name="frameShadow"><enum>QFrame::Raised</enum></property>
+        <property name="styleSheet">
+         <string notr="true">QFrame { border-radius: 8px; background-color: red; }</string>
+        </property>
+        <property name="toolTip"><string>Stopped</string></property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+
+   </layout>
+  </widget>
+
+  <!-- Меню (пустое) -->
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect><x>0</x><y>0</y><width>370</width><height>21</height></rect>
+   </property>
+  </widget>
+
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
